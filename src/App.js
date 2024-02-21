@@ -1,14 +1,15 @@
-import React from 'react';
-import './App.css';
+import React from "react";
+import "./App.css";
 
 /**
  * ?  =====Import Components=====
  */
-import Home from './Pages/Home';
+import Home from "./Pages/Home";
 
 function App() {
   return (
     <div>
+      <h1>Hello</h1>
       <Home />
     </div>
   );
