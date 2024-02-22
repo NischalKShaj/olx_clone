@@ -1,19 +1,57 @@
-import React from 'react';
-
-import Logo from '../../olx-logo.png';
-import './Signup.css';
+import React, { useState, useContext } from "react";
+import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
+import Logo from "../../olx-logo.png";
+import "./Signup.css";
+import { FirebaseContext } from "../../Store/Context";
 
 export default function Signup() {
+  const history = useHistory();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phonenumber, setPhonenumber] = useState("");
+  const [password, setPassword] = useState("");
+
+  const { firebase } = useContext(FirebaseContext);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    firebase
+      .auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then((result) => {
+        result.user.updateProfile({ displayName: username }).then(() => {
+          firebase
+            .firestore()
+            .collection("users")
+            .add({
+              id: result.user.uid,
+              username: username,
+              phonenumber: phonenumber,
+            })
+            .then(() => {
+              history.push("/login");
+            });
+        });
+      });
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    history.push("/login");
+  };
+
   return (
     <div>
       <div className="signupParentDiv">
         <img width="200px" height="200px" src={Logo}></img>
-        <form>
+        <form onSubmit={handleSubmit}>
           <label htmlFor="fname">Username</label>
           <br />
           <input
             className="input"
             type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             id="fname"
             name="name"
             defaultValue="John"
@@ -24,6 +62,8 @@ export default function Signup() {
           <input
             className="input"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             id="fname"
             name="email"
             defaultValue="John"
@@ -34,6 +74,8 @@ export default function Signup() {
           <input
             className="input"
             type="number"
+            value={phonenumber}
+            onChange={(e) => setPhonenumber(e.target.value)}
             id="lname"
             name="phone"
             defaultValue="Doe"
@@ -44,6 +86,8 @@ export default function Signup() {
           <input
             className="input"
             type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             id="lname"
             name="password"
             defaultValue="Doe"
@@ -52,7 +96,7 @@ export default function Signup() {
           <br />
           <button>Signup</button>
         </form>
-        <a>Login</a>
+        <a onClick={handleLogin}>Login</a>
       </div>
     </div>
   );
