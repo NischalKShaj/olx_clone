@@ -2,42 +2,36 @@ import React, { Fragment, useContext, useState } from "react";
 import "./Create.css";
 import Header from "../Header/Header";
 import { FirebaseContext, AuthContext } from "../../Store/Context";
+import { useHistory } from "react-router-dom";
 
 const Create = () => {
   const { firebase } = useContext(FirebaseContext);
   const { user } = useContext(AuthContext);
+  const history = useHistory();
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
-
+  const date = new Date();
   const handleSubmit = async () => {
-    // firebase
-    //   .storage()
-    //   .ref(`/image/${image.name}`)
-    //   .put(image)
-    //   .then(({ ref }) => {
-    //     ref.getDownloadURL().then((url) => {
-    //       console.log(url);
-    //     });
-    //   });
-    if (!user) {
-      // Handle not logged in case
-      alert("user NOt logged in ");
-      return;
-    }
-
-    const storageRef = firebase.storage().ref(`/images/${image.name}`);
-
-    try {
-      const uploadTask = storageRef.put(image);
-      const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-      console.log("Image uploaded successfully:", downloadURL);
-
-      // ... further processing with the downloadURL
-    } catch (error) {
-      console.error("Upload failed:", error);
-    }
+    firebase
+      .storage()
+      .ref(`/image/${image.name}`)
+      .put(image)
+      .then(({ ref }) => {
+        ref.getDownloadURL().then((url) => {
+          console.log(url);
+          firebase.firestore().collection("products").add({
+            name,
+            category,
+            price,
+            url,
+            userId: user.uid,
+            createdAt: date.toDateString(),
+          });
+          history.push("/");
+        });
+      });
   };
 
   return (
